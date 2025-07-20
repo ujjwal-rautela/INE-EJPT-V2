@@ -37,7 +37,3 @@ This project breaks down the exam objectives into weekly milestones, recommended
 - **Week 6** – Exploitation intro, Final prep, Mock tests
 
 > Full roadmap available on the [website](https://your-website-link.com) (LEMME MAKE IT THEN I WIL ADD IT LATER  )
-
----
-
-## 📂 Project Structure
