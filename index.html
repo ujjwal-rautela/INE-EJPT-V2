@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eJPT v2 Interactive Success Roadmap</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Slate Gray Harmony -->
+    <!-- Application Structure Plan: The application is designed as a multi-section, single-page dashboard. The core design uses a main navigation bar to jump between key sections: 'Home' (Introduction), 'Prerequisites', 'Roadmap', 'Budget', 'Strategy' and 'Resources'. This non-linear structure was chosen because a user's needs vary; a beginner might start at Prerequisites, while someone already studying might jump straight to a specific week in the Roadmap. The Roadmap itself is the central interactive component, using a tabbed interface for each of the four weeks. This prevents information overload by presenting the detailed daily plan in manageable chunks. User flow is designed to be self-directed, allowing exploration of costs, resources, or the study plan in any order, which is more usable than a rigid, linear document. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Total study plan. -> Goal: Organize. -> Viz/Presentation Method: Tabbed interface for weeks, with checklist cards for each day. -> Interaction: Clicking tabs shows/hides weekly content. Checkboxes allow progress tracking. -> Justification: Breaks down a dense 28-day plan into focused, digestible segments, enhancing user engagement and reducing cognitive load. -> Library/Method: HTML/Tailwind/JS.
+        - Report Info: Budget Estimation. -> Goal: Inform/Compare. -> Viz/Presentation Method: A Doughnut Chart and a clear summary table. -> Interaction: Hovering over chart segments reveals cost details in tooltips. -> Justification: A visual chart makes the cost breakdown more immediate and easier to understand than text alone. -> Library/Method: Chart.js.
+        - Report Info: Prerequisite knowledge. -> Goal: Inform. -> Viz/Presentation Method: Simple checklist with detailed explanations. -> Interaction: Users can mentally or physically check off items. -> Justification: A clear, scannable list of foundational requirements sets expectations effectively for beginners. -> Library/Method: HTML/Tailwind.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #334155;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .tab-active {
+            background-color: #38bdf8;
+            color: #ffffff;
+            border-color: #0ea5e9;
+        }
+        .tab-inactive {
+            background-color: #ffffff;
+            color: #475569;
+            border-color: #cbd5e1;
+        }
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+        .checklist-item input[type="checkbox"] {
+            margin-top: 5px;
+            margin-right: 12px;
+            flex-shrink: 0;
+            accent-color: #38bdf8;
+            width: 1rem;
+            height: 1rem;
+        }
+        .chart-container { 
+            position: relative; 
+            width: 100%; 
+            max-width: 400px; 
+            margin-left: auto; 
+            margin-right: auto; 
+            height: 350px; 
+            max-height: 400px;
+        }
+        .social-icon {
+            transition: transform 0.2s;
+        }
+        .social-icon:hover {
+            transform: scale(1.1);
+        }
+        /* Dark Theme */
+        body.dark { background-color: #0f172a; color: #cbd5e1; }
+        body.dark .bg-white { background-color: #1e293b; }
+        body.dark .shadow { box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4); }
+        body.dark .text-slate-800, body.dark .text-slate-900 { color: #f8fafc; }
+        body.dark .text-slate-600, body.dark .text-slate-500, body.dark .text-slate-700 { color: #94a3b8; }
+        body.dark .bg-sky-100 { background-color: #334155; }
+        body.dark .text-sky-800, body.dark .text-sky-900 { color: #7dd3fc; }
+        body.dark .tab-inactive { background-color: #334155; color: #cbd5e1; border-color: #475569; }
+        body.dark .checklist-item { border-bottom-color: #334155; }
+        body.dark a.text-sky-600 { color: #7dd3fc; }
+        body.dark footer { background-color: #1e293b; }
+        body.dark .theme-btn-active { background-color: #38bdf8; color: white; }
+        body.dark .nav-link:hover { background-color: #334155; }
+        body.dark .border-slate-200 { border-color: #334155; }
+        body.dark .social-icon path { fill: #94a3b8; }
+        body.dark .social-icon:hover path { fill: #e2e8f0; }
+
+
+        /* Hacker Theme */
+        body.hacker { background-color: #000000; color: #00ff00; font-family: 'Source Code Pro', monospace; }
+        body.hacker .bg-white { background-color: #0a0a0a; border: 1px solid #00ff00; }
+        body.hacker .shadow { box-shadow: 0 0 5px #00ff00; }
+        body.hacker h1, body.hacker h2, body.hacker h3, body.hacker h4, body.hacker p, body.hacker label, body.hacker li, body.hacker span, body.hacker a { color: #00ff00; }
+        body.hacker .font-bold { font-weight: 600; }
+        body.hacker .text-slate-800, body.hacker .text-slate-900, body.hacker .text-slate-600, body.hacker .text-slate-500, body.hacker .text-slate-700 { color: #00ff00 !important; }
+        body.hacker .bg-sky-100 { background-color: #05140c; border: 1px solid #00ff00; }
+        body.hacker .text-sky-800, body.hacker .text-sky-900 { color: #39ff14 !important; }
+        body.hacker .tab-btn { font-family: 'Source Code Pro', monospace; }
+        body.hacker .tab-inactive { background-color: black; color: #00ff00; border-color: #00ff00; }
+        body.hacker .tab-active { background-color: #00ff00; color: black; border-color: #00ff00; }
+        body.hacker .checklist-item { border-bottom-color: #00ff00; }
+        body.hacker input[type="checkbox"] { accent-color: #00ff00; background-color: black; border: 1px solid #00ff00; }
+        body.hacker a:hover { text-decoration: none; background-color: #00ff00; color: black !important; }
+        body.hacker footer { background-color: #0a0a0a; border-top: 1px solid #00ff00; }
+        body.hacker .theme-btn { border: 1px solid #00ff00; }
+        body.hacker .theme-btn-active { background-color: #00ff00; color: black; }
+        body.hacker .border-slate-200 { border-color: #00ff00; }
+        body.hacker .nav-link:hover { background-color: #05140c; }
+        body.hacker .social-icon path { fill: #00ff00; }
+        body.hacker .social-icon:hover path { fill: #000000; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="min-h-screen flex flex-col">
+        <header class="bg-white shadow-sm sticky top-0 z-10">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-16">
+                    <div class="flex-shrink-0">
+                       <a href="#home" class="text-xl md:text-2xl font-bold text-slate-800">eJPTv2 Roadmap</a>
+                    </div>
+                    
+                    <nav class="hidden md:flex md:justify-center flex-grow">
+                        <div class="flex items-baseline space-x-4">
+                            <a href="#home" class="nav-link text-slate-600 hover:bg-slate-200 px-3 py-2 rounded-md text-sm font-medium">Home</a>
+                            <a href="#prerequisites" class="nav-link text-slate-600 hover:bg-slate-200 px-3 py-2 rounded-md text-sm font-medium">Prerequisites</a>
+                            <a href="#roadmap" class="nav-link text-slate-600 hover:bg-slate-200 px-3 py-2 rounded-md text-sm font-medium">Roadmap</a>
+                            <a href="#budget" class="nav-link text-slate-600 hover:bg-slate-200 px-3 py-2 rounded-md text-sm font-medium">Budget</a>
+                            <a href="#strategy" class="nav-link text-slate-600 hover:bg-slate-200 px-3 py-2 rounded-md text-sm font-medium">Strategy</a>
+                            <a href="#resources" class="nav-link text-slate-600 hover:bg-slate-200 px-3 py-2 rounded-md text-sm font-medium">Resources</a>
+                        </div>
+                    </nav>
+
+                    <div class="flex items-center">
+                        <div class="flex items-center space-x-1 border-l border-slate-200 pl-4">
+                            <button data-theme="light" class="theme-btn p-2 rounded-md text-xs font-semibold text-slate-600 hover:bg-slate-200 theme-btn-active">Light</button>
+                            <button data-theme="dark" class="theme-btn p-2 rounded-md text-xs font-semibold text-slate-600 hover:bg-slate-200">Dark</button>
+                            <button data-theme="hacker" class="theme-btn p-2 rounded-md text-xs font-semibold text-slate-600 hover:bg-slate-200">Hacker</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow">
+            
+            <section id="home" class="mb-16">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">Your Journey to eJPT v2 Certification Starts Here</h2>
+                <p class="text-slate-600 mb-6 max-w-4xl">
+                    Welcome to your personalized, all-in-one guide for conquering the eJPTv2 (eLearnSecurity Junior Penetration Tester) certification. This roadmap is designed for beginners, providing a clear, step-by-step plan to build your skills from the ground up. The eJPT is a 100% practical, 48-hour exam that proves you have the real-world skills to be a penetration tester. It covers the full pentesting workflow across four key domains:
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white p-4 rounded-lg shadow"><h3 class="font-bold text-slate-800">Assessment Methodologies (25%)</h3><p class="text-sm text-slate-600">Reconnaissance, scanning, and vulnerability identification.</p></div>
+                    <div class="bg-white p-4 rounded-lg shadow"><h3 class="font-bold text-slate-800">Host & Network Auditing (25%)</h3><p class="text-sm text-slate-600">Post-exploitation, finding sensitive data, and enumerating compromised systems.</p></div>
+                    <div class="bg-white p-4 rounded-lg shadow"><h3 class="font-bold text-slate-800">Host & Network Pentesting (35%)</h3><p class="text-sm text-slate-600">Exploitation with Metasploit, password attacks, and pivoting.</p></div>
+                    <div class="bg-white p-4 rounded-lg shadow"><h3 class="font-bold text-slate-800">Web App Pentesting (15%)</h3><p class="text-sm text-slate-600">Web enumeration and exploiting common web vulnerabilities.</p></div>
+                </div>
+                 <p class="text-slate-600 mb-4 max-w-4xl">This guide breaks down the complex syllabus into a manageable 4-week schedule. Use the navigation to explore prerequisites, the daily study plan, budget estimates, and helpful resources.</p>
+            </section>
+
+            <section id="prerequisites" class="mb-16 bg-white p-6 rounded-lg shadow">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">Prerequisites Checklist</h2>
+                 <p class="text-slate-600 mb-6">Before you dive into the main study plan, ensure you have a solid grasp of these fundamentals. The official INE course covers these topics, but knowing them beforehand will make your journey much smoother and faster. This section helps you self-assess your readiness.</p>
+                <div class="space-y-4">
+                    <div class="checklist-item"><input type="checkbox"><div><label class="font-bold">Basic Networking Concepts</label><p class="text-sm text-slate-600">You must understand how computers talk to each other. Knowing the OSI model, TCP/IP, and common ports (like 80 for web traffic) is essential for identifying and exploiting services.</p></div></div>
+                    <div class="checklist-item"><input type="checkbox"><div><label class="font-bold">Command-Line Proficiency</label><p class="text-sm text-slate-600">You will live in the terminal during the exam. Being comfortable with Linux (bash) and Windows (cmd) for navigating files and running tools is non-negotiable.</p></div></div>
+                    <div class="checklist-item"><input type="checkbox"><div><label class="font-bold">IT Fundamentals</label><p class="text-sm text-slate-600">A general knowledge of how operating systems, web applications, and databases work provides the context for your attacks. You can't break what you don't understand.</p></div></div>
+                    <div class="checklist-item"><input type="checkbox"><div><label class="font-bold">Problem-Solving Mindset</label><p class="text-sm text-slate-600">Penetration testing is detective work. It requires curiosity, persistence, and the ability to troubleshoot when things don't work as expected.</p></div></div>
+                </div>
+            </section>
+
+            <section id="roadmap" class="mb-16">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4 text-center">The 4-Week Study Roadmap</h2>
+                <p class="text-slate-600 mb-6 text-center max-w-3xl mx-auto">This is the core of your preparation. The roadmap is structured into four weeks, each focusing on a specific set of skills from the eJPT syllabus. Each day has a clear checklist of topics to cover and practical tasks to perform. Click on a week to view your daily plan. Consistency is key!</p>
+                <div class="mb-6 flex flex-wrap justify-center gap-2">
+                    <button class="tab-btn px-6 py-2 rounded-md font-semibold border-2 tab-active" data-tab="week1">Week 1</button>
+                    <button class="tab-btn px-6 py-2 rounded-md font-semibold border-2 tab-inactive" data-tab="week2">Week 2</button>
+                    <button class="tab-btn px-6 py-2 rounded-md font-semibold border-2 tab-inactive" data-tab="week3">Week 3</button>
+                    <button class="tab-btn px-6 py-2 rounded-md font-semibold border-2 tab-inactive" data-tab="week4">Week 4</button>
+                </div>
+                
+                <div id="roadmap-content">
+                    <!-- Week 1 Content -->
+                    <div id="week1" class="tab-content">
+                        <h3 class="text-2xl font-bold text-slate-800 mb-2 text-center">Week 1: Foundations & Network Auditing</h3>
+                        <p class="text-slate-500 mb-6 text-center">Goal: Build a strong foundation. This week is about learning how to "case the joint" – performing reconnaissance and scanning to map out your targets and find potential entry points using tools like Nmap.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="bg-white p-4 rounded-lg shadow"><h4 class="font-bold text-lg mb-2">Days 1-2: Assessment Methodologies</h4><div class="checklist-item"><input type="checkbox"><label>Study INE's "Penetration Testing Prerequisites" material.</label></div><div class="checklist-item"><input type="checkbox"><label>Understand the pentesting lifecycle: Planning, Info Gathering, Exploitation, Post-Exploitation, Reporting.</label></div><div class="checklist-item"><input type="checkbox"><label>Learn about Passive vs. Active information gathering.</label></div></div>
+                            <div class="bg-white p-4 rounded-lg shadow"><h4 class="font-bold text-lg mb-2">Days 3-4: Host & Network Auditing</h4><div class="checklist-item"><input type="checkbox"><label>Deep dive into TCP/IP concepts and the Three-Way Handshake.</label></div><div class="checklist-item"><input type="checkbox"><label>Study INE's "Host & Network Auditing" module.</label></div><div class="checklist-item"><input type="checkbox"><label>Practice with Wireshark to analyze network traffic.</label></div></div>
+                            <div class="bg-white p-4 rounded-lg shadow"><h4 class="font-bold text-lg mb-2">Days 5-7: Mastering Nmap</h4><div class="checklist-item"><input type="checkbox"><label>Learn Nmap basics: `nmap -sV -sC -oN`</label></div><div class="checklist-item"><input type="checkbox"><label>Explore different scan types (SYN, UDP, Xmas).</label></div><div class="checklist-item"><input type="checkbox"><label>Practice Nmap Scripting Engine (NSE) for vulnerability scanning. Complete the Nmap room on TryHackMe.</label></div></div>
+                        </div>
+                    </div>
+                    <!-- Week 2 Content -->
+                    <div id="week2" class="tab-content hidden">
+                        <h3 class="text-2xl font-bold text-slate-800 mb-2 text-center">Week 2: Enumeration & Web Application Auditing</h3>
+                        <p class="text-slate-500 mb-6 text-center">Goal: Dig deeper. This week focuses on enumerating specific services (like file shares) to find misconfigurations and beginning your journey into web application hacking with the essential tool, Burp Suite.</p>
+                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="bg-white p-4 rounded-lg shadow"><h4 class="font-bold text-lg mb-2">Days 8-10: Service Enumeration</h4><div class="checklist-item"><input type="checkbox"><label>Enumerate SMB using tools like `enum4linux` and `smbclient`.</label></div><div class="checklist-item"><input type="checkbox"><label>Enumerate NTP, NFS, DNS, and FTP.</label></div><div class="checklist-item"><input type="checkbox"><label>Practice enumeration techniques on relevant TryHackMe/INE labs.</label></div></div>
+                            <div class="bg-white p-4 rounded-lg shadow"><h4 class="font-bold text-lg mb-2">Days 11-12: Intro to Web Apps & Burp Suite</h4><div class="checklist-item"><input type="checkbox"><label>Study INE's "Web Application Auditing" module.</label></div><div class="checklist-item"><input type="checkbox"><label>Understand HTTP/HTTPS, Cookies, and Sessions.</label></div><div class="checklist-item"><input type="checkbox"><label>Set up and learn the core features of Burp Suite (Proxy, Repeater, Intruder).</label></div></div>
+                            <div class="bg-white p-4 rounded-lg shadow"><h4 class="font-bold text-lg mb-2">Days 13-14: Web Attack Vectors</h4><div class="checklist-item"><input type="checkbox"><label>Learn to identify vulnerabilities like XSS (Cross-Site Scripting) and SQL Injection.</label></div><div class="checklist-item"><input type="checkbox"><label>Practice with directory enumeration tools like `gobuster` or `dirb`.</label></div><div class="checklist-item"><input type="checkbox"><label>Analyze website source code for clues.</label></div></div>
+                        </div>
+                    </div>
+                    <!-- Week 3 Content -->
+                    <div id="week3" class="tab-content hidden">
+                        <h3 class="text-2xl font-bold text-slate-800 mb-2 text-center">Week 3: Exploitation & Pivoting</h4>
+                        <p class="text-slate-500 mb-6 text-center">Goal: Get in and move around. This week is all about the "fun" part: gaining access to systems using Metasploit, cracking passwords, and learning the critical skill of pivoting to attack deeper parts of the network.</p>
+                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="bg-white p-4 rounded-lg shadow"><h4 class="font-bold text-lg mb-2">Days 15-17: Metasploit Framework</h4><div class="checklist-item"><input type="checkbox"><label>Study INE's "Penetration Testing: Preliminary Stages" labs.</label></div><div class="checklist-item"><input type="checkbox"><label>Learn the Metasploit basics: `msfconsole`, `search`, `use`, `exploit`.</label></div><div class="checklist-item"><input type="checkbox"><label>Understand payloads, encoders, and Meterpreter sessions.</label></div></div>
+                            <div class="bg-white p-4 rounded-lg shadow"><h4 class="font-bold text-lg mb-2">Days 18-19: Password Attacks</h4><div class="checklist-item"><input type="checkbox"><label>Learn about password cracking tools like John the Ripper and Hashcat.</label></div><div class="checklist-item"><input type="checkbox"><label>Perform online password attacks (brute-force) with Hydra.</label></div><div class="checklist-item"><input type="checkbox"><label>Understand the importance of good wordlists (e.g., rockyou.txt).</label></div></div>
+                            <div class="bg-white p-4 rounded-lg shadow"><h4 class="font-bold text-lg mb-2">Days 20-21: Pivoting & Data Exfiltration</h4><div class="checklist-item"><input type="checkbox"><label>Study INE's "Pivoting, Tunnelling, and Port Forwarding" section.</label></div><div class="checklist-item"><input type="checkbox"><label>Understand the concept of routing and pivoting to access hidden networks.</label></div><div class="checklist-item"><input type="checkbox"><label>Practice adding routes in Metasploit to pivot.</label></div></div>
+                        </div>
+                    </div>
+                    <!-- Week 4 Content -->
+                    <div id="week4" class="tab-content hidden">
+                        <h3 class="text-2xl font-bold text-slate-800 mb-2 text-center">Week 4: Review, Practice & Final Prep</h4>
+                        <p class="text-slate-500 mb-6 text-center">Goal: Sharpen the axe. This final week is about consolidating all your knowledge, practicing on exam-like labs, reviewing your weak points, and getting mentally prepared for the 48-hour challenge.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="bg-white p-4 rounded-lg shadow"><h4 class="font-bold text-lg mb-2">Days 22-24: Full Lab Walkthroughs</h4><div class="checklist-item"><input type="checkbox"><label>Complete all the Black Box labs in the INE course.</label></div><div class="checklist-item"><input type="checkbox"><label>Take detailed notes on your methodology for each box.</label></div><div class="checklist-item"><input type="checkbox"><label>Try beginner-friendly boxes on TryHackMe or HackTheBox.</label></div></div>
+                            <div class="bg-white p-4 rounded-lg shadow"><h4 class="font-bold text-lg mb-2">Days 25-26: Weakness Review</h4><div class="checklist-item"><input type="checkbox"><label>Review your notes and identify topics you struggled with.</label></div><div class="checklist-item"><input type="checkbox"><label>Re-do labs focusing on those specific areas (e.g., pivoting, web enumeration).</label></div><div class="checklist-item"><input type="checkbox"><label>Watch supplemental videos on topics you are weak in.</label></div></div>
+                             <div class="bg-white p-4 rounded-lg shadow"><h4 class="font-bold text-lg mb-2">Days 27-28: Final Prep & Rest</h4><div class="checklist-item"><input type="checkbox"><label>Review the exam rules and ensure your environment is set up correctly.</label></div><div class="checklist-item"><input type="checkbox"><label>Organize your notes and commands for quick reference.</label></div><div class="checklist-item"><input type="checkbox"><label>Relax! Get a good night's sleep before the exam. You've prepared for this.</label></div></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="budget" class="mb-16 bg-white p-6 rounded-lg shadow">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">Budget Estimation</h2>
+                <p class="text-slate-600 mb-6">Here’s a breakdown of the potential costs. The official INE course is specifically tailored to the exam and is the most recommended path. The best value for a beginner is the **eJPT + Prep Bundle**, which provides the official training and the exam voucher for the price of the voucher alone.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div>
+                         <h3 class="text-xl font-bold text-slate-800 mb-2">Cost Breakdown</h3>
+                         <ul class="list-disc list-inside space-y-2 text-slate-700">
+                             <li><strong>eJPT + Prep Bundle:</strong> $249 (Includes voucher + 3 months of INE training).</li>
+                             <li><strong>INE Fundamentals Annual:</strong> $299 (Includes voucher + 1 year of training).</li>
+                             <li><strong>Standalone Exam Voucher:</strong> $249.</li>
+                         </ul>
+                         <p class="mt-4 text-sm text-slate-500">Note: Prices are approximate and can change. Look out for INE sales and bundles which might offer a better deal.</p>
+                    </div>
+                    <div>
+                        <div class="chart-container">
+                           <canvas id="budgetChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="strategy" class="mb-16 bg-white p-6 rounded-lg shadow">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">Exam Day Strategy</h2>
+                 <p class="text-slate-600 mb-6">Preparation is half the battle; execution is the other half. How you manage your 48 hours is critical. Do not rush into scanning. A methodical approach will save you time and prevent frustration.</p>
+                <div class="space-y-4">
+                    <div class="checklist-item"><input type="checkbox"><div><label class="font-bold">The First 60 Minutes are Critical</label><p class="text-sm text-slate-600">Before you run a single command, read the Letter of Engagement and **every single exam question**. Group the questions by target IP in your notes. This creates a "loot list" and tells you exactly what you need to find, turning the questions into your guide.</p></div></div>
+                    <div class="checklist-item"><input type="checkbox"><div><label class="font-bold">Enumeration is King</label><p class="text-sm text-slate-600">The rhythm of the exam is: **Enumerate -> Exploit -> Enumerate Again**. After you get a foothold on a machine, your first step should be to enumerate it for more information (users, passwords, network connections) that could lead to the next target.</p></div></div>
+                    <div class="checklist-item"><input type="checkbox"><div><label class="font-bold">Avoid Rabbit Holes</label><p class="text-sm text-slate-600">The eJPT is straightforward. If an exploit is not working after a reasonable amount of time, it's probably not the intended path. Document your attempt, note why it failed, and move on. Don't waste hours on a single vector.</p></div></div>
+                    <div class="checklist-item"><input type="checkbox"><div><label class="font-bold">Take Breaks & Use Your Retake</label><p class="text-sm text-slate-600">This is a 48-hour marathon. Schedule breaks to clear your head. Remember, the exam includes a free retake, which is a strategic safety net. Don't panic if you get stuck.</p></div></div>
+                </div>
+            </section>
+
+            <section id="resources" class="mb-12">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4 text-center">The Ultimate Resource Arsenal</h2>
+                <p class="text-slate-600 mb-8 text-center max-w-3xl mx-auto">Success depends on having the right tools and information at your fingertips. Here is a curated list of essential platforms, tools, and resources to build your knowledge base.</p>
+                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-xl font-bold text-slate-800 mb-4">Practice Platforms</h3>
+                        <ul class="space-y-3">
+                           <li><a href="https://tryhackme.com" target="_blank" class="text-sky-600 hover:underline font-semibold">TryHackMe</a>: Best for guided, hands-on learning.</li>
+                           <li><a href="https://tryhackme.com/room/wreath" target="_blank" class="text-sky-600 hover:underline ml-4">- Wreath (Pivoting Practice)</a></li>
+                           <li><a href="https://tryhackme.com/room/blue" target="_blank" class="text-sky-600 hover:underline ml-4">- Blue (Metasploit Practice)</a></li>
+                           <li><a href="https://tryhackme.com/room/vulnversity" target="_blank" class="text-sky-600 hover:underline ml-4">- Vulnversity (Web Enumeration)</a></li>
+                           <li class="pt-2"><a href="https://hackthebox.com" target="_blank" class="text-sky-600 hover:underline font-semibold">Hack The Box</a>: Best for challenge-based learning.</li>
+                           <li><a href="https://app.hackthebox.com/machines/Armageddon" target="_blank" class="text-sky-600 hover:underline ml-4">- Armageddon (Exam-like Feel)</a></li>
+                           <li class="pt-2"><a href="https://ine.com" target="_blank" class="text-sky-600 hover:underline font-semibold">INE (Official)</a>: The primary source for course material and the crucial Black Box labs.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-xl font-bold text-slate-800 mb-4">Note-Taking & Cheatsheets</h3>
+                        <ul class="space-y-3">
+                            <li><a href="https://obsidian.md/" target="_blank" class="text-sky-600 hover:underline font-semibold">Obsidian</a>: Excellent for building a searchable, linked knowledge base.</li>
+                            <li><a href="https://www.notion.so/" target="_blank" class="text-sky-600 hover:underline font-semibold">Notion</a>: A great alternative for structured, database-like notes.</li>
+                            <li><a href="https://github.com/sikhacks/eJPT-Cheatsheet" target="_blank" class="text-sky-600 hover:underline font-semibold pt-2">eJPT Cheatsheet on GitHub</a></li>
+                            <li><a href="https://cheatsheet.haax.fr/" target="_blank" class="text-sky-600 hover:underline font-semibold">Haax.fr Cheatsheet</a></li>
+                            <li><a href="https://www.ired.team/" target="_blank" class="text-sky-600 hover:underline font-semibold">Ired.team (Red Team Notes)</a></li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow">
+                        <h3 class="text-xl font-bold text-slate-800 mb-4">Core Tools to Master</h3>
+                        <ul class="space-y-3 text-slate-700">
+                            <li><span class="font-semibold">Nmap:</span> Network discovery and security auditing.</li>
+                            <li><span class="font-semibold">Metasploit:</span> Exploitation framework.</li>
+                            <li><span class="font-semibold">Burp Suite:</span> Web application analysis proxy.</li>
+                            <li><span class="font-semibold">Wireshark:</span> Network protocol analyzer.</li>
+                            <li><span class="font-semibold">Hydra:</span> Brute-force password cracker.</li>
+                            <li><span class="font-semibold">John the Ripper:</span> Offline password cracker.</li>
+                            <li><span class="font-semibold">Enum4linux:</span> SMB enumeration.</li>
+                            <li><span class="font-semibold">Gobuster/Dirb:</span> Web directory brute-forcing.</li>
+                        </ul>
+                    </div>
+                 </div>
+            </section>
+        </main>
+
+        <footer class="bg-white mt-auto py-6">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center text-slate-500">
+                <div class="flex justify-center space-x-6 mb-4">
+                    <a href="#" target="_blank" class="social-icon text-slate-500 hover:text-slate-700">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.168 6.839 9.49.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z" clip-rule="evenodd" /></svg>
+                    </a>
+                    <a href="#" target="_blank" class="social-icon text-slate-500 hover:text-slate-700">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                    </a>
+                    <a href="#" target="_blank" class="social-icon text-slate-500 hover:text-slate-700">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-.424.727-.666 1.584-.666 2.477 0 1.61.82 3.027 2.053 3.846-.764-.024-1.482-.232-2.11-.583v.06c0 2.256 1.605 4.14 3.737 4.568-.39.106-.803.162-1.227.162-.3 0-.593-.028-.877-.082.593 1.85 2.303 3.198 4.34 3.234-1.595 1.25-3.604 1.995-5.786 1.995-.376 0-.747-.022-1.112-.065 2.062 1.323 4.51 2.092 7.14 2.092 8.57 0 13.255-7.098 13.255-13.254 0-.202-.005-.403-.014-.602.91-.658 1.7-1.47 2.323-2.41z"/></svg>
+                    </a>
+                </div>
+                <p class="text-sm">&copy; 2025 Your Success Roadmap. This is a suggested study guide and not an official document from INE/eLearnSecurity.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let budgetChart = null;
+            const body = document.body;
+            const themeButtons = document.querySelectorAll('.theme-btn');
+
+            const getChartOptions = (theme) => {
+                let legendColor = '#475569';
+                let doughnutColors = ['#38bdf8', '#0ea5e9', '#0284c7'];
+                let borderColors = ['#f1f5f9', '#f1f5f9', '#f1f5f9'];
+                let fontFamily = "'Inter', sans-serif";
+
+                if (theme === 'dark') {
+                    legendColor = '#94a3b8';
+                    borderColors = ['#1e293b', '#1e293b', '#1e293b'];
+                } else if (theme === 'hacker') {
+                    legendColor = '#00ff00';
+                    doughnutColors = ['#00ff00', '#39ff14', '#00aa00'];
+                    borderColors = ['#0a0a0a', '#0a0a0a', '#0a0a0a'];
+                    fontFamily = "'Source Code Pro', monospace";
+                }
+
+                return {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: legendColor,
+                                font: { size: 14, family: fontFamily }
+                            }
+                        },
+                        tooltip: {
+                            bodyFont: { family: fontFamily },
+                            titleFont: { family: fontFamily },
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) { label += ': '; }
+                                    if (context.parsed !== null) {
+                                        label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed);
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    datasets: [{
+                        backgroundColor: doughnutColors,
+                        borderColor: borderColors,
+                    }]
+                };
+            };
+
+            const renderChart = (theme) => {
+                if (budgetChart) {
+                    budgetChart.destroy();
+                }
+                const ctx = document.getElementById('budgetChart').getContext('2d');
+                const chartOptions = getChartOptions(theme);
+
+                budgetChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['eJPT + Prep Bundle', 'INE Fundamentals Annual', 'Standalone Voucher'],
+                        datasets: [{
+                            label: 'Cost Breakdown',
+                            data: [249, 299, 249],
+                            backgroundColor: chartOptions.datasets[0].backgroundColor,
+                            borderColor: chartOptions.datasets[0].borderColor,
+                            borderWidth: 3,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: chartOptions
+                });
+            };
+            
+            themeButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const theme = button.dataset.theme;
+                    body.className = theme === 'light' ? '' : theme;
+                    
+                    themeButtons.forEach(btn => btn.classList.remove('theme-btn-active'));
+                    button.classList.add('theme-btn-active');
+
+                    renderChart(theme);
+                });
+            });
+
+            const tabs = document.querySelectorAll('.tab-btn');
+            const contents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.getAttribute('data-tab');
+                    tabs.forEach(t => {
+                        t.classList.remove('tab-active');
+                        t.classList.add('tab-inactive');
+                    });
+                    tab.classList.remove('tab-inactive');
+                    tab.classList.add('tab-active');
+                    contents.forEach(content => {
+                        content.classList.toggle('hidden', content.id !== target);
+                    });
+                });
+            });
+
+            // Initial render
+            renderChart('light');
+        });
+    </script>
+</body>
+</html>
