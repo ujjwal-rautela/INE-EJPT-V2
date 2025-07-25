@@ -37,3 +37,4 @@ This project breaks down the exam objectives into weekly milestones, recommended
 - **Week 6** – Exploitation intro, Final prep, Mock tests
 
 > Full roadmap available on the [website] ( https://ujjwal-rautela.github.io/INE-EJPT-V2 )
+> Do check out the website a lot of work is done in it, It contains all the necessary checklist and roadmap that is necessary for ejptv2
